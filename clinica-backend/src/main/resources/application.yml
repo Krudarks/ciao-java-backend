@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    name: clinica-backend
+    url: jdbc:postgresql://localhost:5432/clinica_db
+    username: portfolio
+    password: clAr+4n2
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8081
+
+security:
+  max-login-attempts: 10
+  access-token-minutes: 15
+  refresh-token-days: 1
+  absolute-session-days: 7
