@@ -6,6 +6,7 @@ import com.ciao.clinica.backend.domain.usuario.repository.RolRepository;
 import com.ciao.clinica.backend.domain.usuario.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -20,6 +21,7 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // ==============================
     // Métodos básicos
@@ -95,18 +97,56 @@ public class UsuarioService {
 
     public void asignarRoles(Long usuarioId, Set<String> nombresRoles) {
 
-    Usuario usuario = usuarioRepository.findById(usuarioId)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Usuario no encontrado"));
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Usuario no encontrado"));
 
-    Set<Rol> roles = rolRepository.findAll()
-            .stream()
-            .filter(r -> nombresRoles.contains(r.getNombre()))
-            .collect(Collectors.toSet());
+        Set<Rol> roles = rolRepository.findAll()
+                .stream()
+                .filter(r -> nombresRoles.contains(r.getNombre()))
+                .collect(Collectors.toSet());
 
-    usuario.setRoles(roles);
+        usuario.setRoles(roles);
 
-    usuarioRepository.save(usuario);
-}
+        usuarioRepository.save(usuario);
+    }
+
+    public Usuario crearUsuario(
+            String username,
+            String email,
+            String password,
+            Set<String> roles) {
+
+        Usuario usuario = new Usuario();
+        usuario.setUsername(username);
+        usuario.setEmail(email);
+        usuario.setPassword(passwordEncoder.encode(password));
+
+        usuarioRepository.save(usuario);
+
+        asignarRoles(usuario.getId(), roles);
+
+        return usuario;
+    }
+
+    public Usuario actualizarUsuario(
+            Long id,
+            String email,
+            Boolean activo) {
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow();
+
+        usuario.setEmail(email);
+        usuario.setActivo(activo);
+
+        return usuarioRepository.save(usuario);
+    }
+
+    public void eliminarUsuario(Long id) {
+
+        usuarioRepository.deleteById(id);
+
+    }
 }
