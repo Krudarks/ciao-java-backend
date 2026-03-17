@@ -1,6 +1,10 @@
 package com.ciao.clinica.backend.api.admin;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -43,12 +47,15 @@ public class AdminController {
 
     // 📋 Listar todos los usuarios
     @GetMapping("/usuarios")
-    public ResponseEntity<List<UsuarioResponse>> listarUsuarios() {
+    public ResponseEntity<Page<UsuarioResponse>> listarUsuarios(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Boolean activo,
+            @RequestParam(required = false) Boolean bloqueado,
+            @RequestParam(required = false) String rol,
+            @PageableDefault(size = 10, sort = "username") Pageable pageable) {
 
-        List<UsuarioResponse> usuarios = usuarioService.listarTodos()
-                .stream()
-                .map(usuarioMapper::toResponse)
-                .toList();
+        var usuarios = usuarioService.listarUsuarios(search, activo, bloqueado, rol, pageable)
+                .map(usuarioMapper::toResponse);
 
         return ResponseEntity.ok(usuarios);
     }
