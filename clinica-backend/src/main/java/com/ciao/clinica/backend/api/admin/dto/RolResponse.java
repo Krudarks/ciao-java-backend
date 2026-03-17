@@ -1,9 +1,9 @@
 package com.ciao.clinica.backend.api.admin.dto;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 @Builder
 public class RolResponse {
 
