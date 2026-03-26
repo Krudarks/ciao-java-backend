@@ -8,7 +8,6 @@ import org.springframework.web.server.ResponseStatusException;
 import com.ciao.clinica.backend.domain.usuario.entity.Rol;
 import com.ciao.clinica.backend.domain.usuario.repository.RolRepository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -33,7 +32,6 @@ public class RolService {
         Rol rol = Rol.builder()
                 .nombre(nombre)
                 .descripcion(descripcion)
-                .fechaCreacion(LocalDateTime.now())
                 .build();
 
         return rolRepository.save(rol);

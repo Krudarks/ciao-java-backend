@@ -3,7 +3,7 @@ package com.ciao.clinica.backend.domain.usuario.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import com.ciao.clinica.backend.domain.common.Auditable;
 
 @Entity
 @Table(name = "roles")
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Rol {
+public class Rol extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,6 +32,4 @@ public class Rol {
     @Builder.Default
     private Boolean systemRole = false;
 
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion;
 }

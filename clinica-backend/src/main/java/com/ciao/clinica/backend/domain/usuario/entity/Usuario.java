@@ -3,8 +3,9 @@ package com.ciao.clinica.backend.domain.usuario.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.Set;
+
+import com.ciao.clinica.backend.domain.common.Auditable;
 
 @Entity
 @Table(name = "usuarios")
@@ -13,7 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Usuario {
+public class Usuario extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,9 +48,6 @@ public class Usuario {
     @Column(name = "intentos_fallidos", nullable = false)
     @Builder.Default
     private Integer intentosFallidos = 0;
-
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "usuario_roles", joinColumns = @JoinColumn(name = "usuario_id"), inverseJoinColumns = @JoinColumn(name = "rol_id"))
