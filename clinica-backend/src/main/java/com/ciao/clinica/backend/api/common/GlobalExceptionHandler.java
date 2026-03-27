@@ -1,7 +1,9 @@
 package com.ciao.clinica.backend.api.common;
 
-import com.ciao.clinica.backend.api.common.exceptions.ConflictException;
-import com.ciao.clinica.backend.api.common.exceptions.ResourceNotFoundException;
+import com.ciao.clinica.backend.domain.common.exceptions.BadRequestException;
+import com.ciao.clinica.backend.domain.common.exceptions.ConflictException;
+import com.ciao.clinica.backend.domain.common.exceptions.ResourceNotFoundException;
+import com.ciao.clinica.backend.domain.common.exceptions.UnauthorizedException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -78,6 +80,41 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
+                .body(error);
+    }
+
+    // BAD REQUEST
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiError> handleBadRequest(
+            BadRequestException ex,
+            HttpServletRequest request) {
+
+        ApiError error = ApiError.builder()
+                .timestamp(LocalDateTime.now())
+                .path(request.getRequestURI())
+                .error(ErrorCode.BAD_REQUEST)
+                .message(ex.getMessage())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(error);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ApiError> handleUnauthorized(
+            UnauthorizedException ex,
+            HttpServletRequest request) {
+
+        ApiError error = ApiError.builder()
+                .timestamp(LocalDateTime.now())
+                .path(request.getRequestURI())
+                .error(ErrorCode.UNAUTHORIZED)
+                .message(ex.getMessage())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
                 .body(error);
     }
 

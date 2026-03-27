@@ -8,10 +8,10 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+
+import com.ciao.clinica.backend.domain.common.exceptions.ResourceNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,9 +36,7 @@ public class UsuarioService {
 
     public Usuario obtenerPorUsername(String username) {
         return usuarioRepository.findByUsername(username)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
     }
 
     public Usuario guardar(Usuario usuario) {
@@ -80,9 +78,7 @@ public class UsuarioService {
 
     public Usuario desbloquearUsuario(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
         usuario.setCuentaNoBloqueada(true);
         usuario.setIntentosFallidos(0);
@@ -154,9 +150,7 @@ public class UsuarioService {
     public void asignarRoles(Long usuarioId, Set<String> nombresRoles) {
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
         Set<Rol> roles = rolRepository.findAll()
                 .stream()

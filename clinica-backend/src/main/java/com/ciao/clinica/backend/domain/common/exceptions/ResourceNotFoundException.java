@@ -1,9 +1,7 @@
-package com.ciao.clinica.backend.api.common.exceptions;
+package com.ciao.clinica.backend.domain.common.exceptions;
 
 public class ResourceNotFoundException extends RuntimeException {
-
     public ResourceNotFoundException(String message) {
         super(message);
     }
-
 }

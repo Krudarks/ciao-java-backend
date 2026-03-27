@@ -1,9 +1,11 @@
 package com.ciao.clinica.backend.domain.usuario.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+
+import com.ciao.clinica.backend.domain.common.exceptions.BadRequestException;
+import com.ciao.clinica.backend.domain.common.exceptions.ConflictException;
+import com.ciao.clinica.backend.domain.common.exceptions.ResourceNotFoundException;
 
 import com.ciao.clinica.backend.domain.usuario.entity.Rol;
 import com.ciao.clinica.backend.domain.usuario.repository.RolRepository;
@@ -24,9 +26,7 @@ public class RolService {
 
         rolRepository.findByNombre(nombre)
                 .ifPresent(r -> {
-                    throw new ResponseStatusException(
-                            HttpStatus.BAD_REQUEST,
-                            "El rol ya existe");
+                    throw new ConflictException("El rol ya existe");
                 });
 
         Rol rol = Rol.builder()
@@ -40,14 +40,10 @@ public class RolService {
     public Rol actualizarRol(Long id, String descripcion) {
 
         Rol rol = rolRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Rol no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado"));
 
         if (rol.getSystemRole()) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "No se puede modificar un rol del sistema");
+            throw new BadRequestException("No se puede modificar un rol del sistema");
         }
 
         rol.setDescripcion(descripcion);
@@ -58,14 +54,10 @@ public class RolService {
     public void eliminarRol(Long id) {
 
         Rol rol = rolRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Rol no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado"));
 
         if (rol.getSystemRole()) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "No se puede eliminar un rol del sistema");
+            throw new BadRequestException("No se puede eliminar un rol del sistema");
         }
 
         rolRepository.delete(rol);

@@ -5,14 +5,14 @@ import lombok.RequiredArgsConstructor;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
-import com.ciao.clinica.backend.api.auth.AuthResponse;
+import com.ciao.clinica.backend.domain.common.exceptions.UnauthorizedException;
+
+import com.ciao.clinica.backend.domain.auth.dto.AuthTokens;
 import com.ciao.clinica.backend.config.SecurityProperties;
 import com.ciao.clinica.backend.domain.refresh.service.RefreshTokenService;
 import com.ciao.clinica.backend.domain.usuario.entity.Usuario;
@@ -34,7 +34,7 @@ public class AuthService {
     // ==============================
     // LOGIN
     // ==============================
-    public AuthResponse login(String username, String password) {
+    public AuthTokens login(String username, String password) {
 
         try {
 
@@ -46,9 +46,7 @@ public class AuthService {
             Usuario usuario = usuarioService.obtenerPorUsername(userDetails.getUsername());
 
             if (!usuario.getActivo()) {
-                throw new ResponseStatusException(
-                        HttpStatus.UNAUTHORIZED,
-                        "Usuario inactivo");
+                throw new UnauthorizedException("Usuario inactivo");
             }
 
             usuarioService.resetearIntentos(usuario);
@@ -62,7 +60,7 @@ public class AuthService {
                     Duration.ofDays(securityProperties.getRefreshTokenDays()),
                     LocalDateTime.now());
 
-            return AuthResponse.builder()
+            return AuthTokens.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .tokenType("Bearer")
@@ -70,9 +68,7 @@ public class AuthService {
 
         } catch (LockedException ex) {
 
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Cuenta bloqueada. Contacte al administrador.");
+            throw new UnauthorizedException("Cuenta bloqueada. Contacte al administrador.");
 
         } catch (BadCredentialsException ex) {
 
@@ -80,39 +76,31 @@ public class AuthService {
                     username,
                     securityProperties.getMaxLoginAttempts());
 
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Credenciales incorrectas");
+            throw new UnauthorizedException("Credenciales incorrectas");
         }
     }
 
     // ==============================
     // REFRESH
     // ==============================
-    public AuthResponse refresh(String refreshToken) {
+    public AuthTokens refresh(String refreshToken) {
 
         var storedToken = refreshTokenService.findByToken(refreshToken);
 
         if (storedToken.isRevocado()) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Refresh token revocado");
+            throw new UnauthorizedException("Refresh token revocado");
         }
 
         if (storedToken.getFechaExpiracion()
                 .isBefore(LocalDateTime.now())) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Refresh token expirado");
+            throw new UnauthorizedException("Refresh token expirado");
         }
 
         LocalDateTime limiteAbsoluto = storedToken.getFechaInicioSesion()
                 .plusDays(securityProperties.getAbsoluteSessionDays());
 
         if (LocalDateTime.now().isAfter(limiteAbsoluto)) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Sesión expirada. Inicie sesión nuevamente.");
+            throw new UnauthorizedException("Sesión expirada. Inicie sesión nuevamente.");
         }
 
         String username = jwtService.extractUsername(refreshToken);
@@ -132,7 +120,7 @@ public class AuthService {
                 Duration.ofDays(securityProperties.getRefreshTokenDays()),
                 storedToken.getFechaInicioSesion());
 
-        return AuthResponse.builder()
+        return AuthTokens.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
                 .tokenType("Bearer")

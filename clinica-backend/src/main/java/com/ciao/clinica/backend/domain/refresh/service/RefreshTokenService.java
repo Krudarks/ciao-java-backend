@@ -2,6 +2,8 @@ package com.ciao.clinica.backend.domain.refresh.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import com.ciao.clinica.backend.domain.common.exceptions.UnauthorizedException;
 import com.ciao.clinica.backend.domain.refresh.entity.RefreshToken;
 import com.ciao.clinica.backend.domain.refresh.repository.RefreshTokenRepository;
 
@@ -29,7 +31,7 @@ public class RefreshTokenService {
 
     public RefreshToken findByToken(String token) {
         return refreshTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Refresh token no encontrado"));
+                .orElseThrow(() -> new UnauthorizedException("Refresh token no encontrado"));
     }
 
     public void revoke(RefreshToken refreshToken) {
