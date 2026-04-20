@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/clinica_db
+    username: portfolio
+    password: clAr+4n2
+server:
+  port: 8081
+cors:
+  allowed-origins:
+    - http://localhost:4200
