@@ -18,8 +18,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
@@ -39,6 +42,7 @@ public class UsuarioService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
     }
 
+    @Transactional
     public Usuario guardar(Usuario usuario) {
         return usuarioRepository.save(usuario);
     }
@@ -47,11 +51,13 @@ public class UsuarioService {
     // Seguridad / Login
     // ==============================
 
+    @Transactional
     public void resetearIntentos(Usuario usuario) {
         usuario.setIntentosFallidos(0);
         usuarioRepository.save(usuario);
     }
 
+    @Transactional
     public void registrarIntentoFallido(String username, int maxIntentos) {
 
         usuarioRepository.findByUsername(username).ifPresent(usuario -> {
@@ -76,6 +82,7 @@ public class UsuarioService {
     // Admin
     // ==============================
 
+    @Transactional
     public Usuario desbloquearUsuario(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
@@ -147,6 +154,7 @@ public class UsuarioService {
         return usuarioRepository.findByCuentaNoBloqueadaFalse();
     }
 
+    @Transactional
     public void asignarRoles(Long usuarioId, Set<String> nombresRoles) {
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -162,6 +170,7 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
+    @Transactional
     public Usuario crearUsuario(
             String username,
             String email,
@@ -173,13 +182,17 @@ public class UsuarioService {
         usuario.setEmail(email);
         usuario.setPassword(passwordEncoder.encode(password));
 
-        usuarioRepository.save(usuario);
+        Set<Rol> rolesEncontrados = rolRepository.findAll()
+                .stream()
+                .filter(r -> roles.contains(r.getNombre()))
+                .collect(Collectors.toSet());
 
-        asignarRoles(usuario.getId(), roles);
+        usuario.setRoles(rolesEncontrados);
 
-        return usuario;
+        return usuarioRepository.save(usuario);
     }
 
+    @Transactional
     public Usuario actualizarUsuario(
             Long id,
             String email,
@@ -194,6 +207,7 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
+    @Transactional
     public void eliminarUsuario(Long id) {
 
         usuarioRepository.deleteById(id);
