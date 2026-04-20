@@ -11,22 +11,23 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.List;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
+import com.ciao.clinica.backend.config.SecurityProperties;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
 
-    // 🔐 En producción esto va en variables de entorno
-    private final String SECRET_KEY = "ESTA_ES_UNA_CLAVE_SUPER_SEGURA_MINIMO_256_BITS_CAMBIAR_EN_PRODUCCION_123456";
+    private final SecurityProperties securityProperties;
 
     private SecretKey key;
 
-    private final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 15; // 15 minutos
-
-    private final long REFRESH_TOKEN_EXPIRATION = 1000L * 60 * 60 * 24 * 7; // 7 días
-
     @PostConstruct
     public void init() {
-        this.key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+        this.key = Keys.hmacShaKeyFor(securityProperties.getSecretKey().getBytes());
     }
 
     public String generateToken(UserDetails userDetails) {
@@ -39,7 +40,7 @@ public class JwtService {
                                 .map(auth -> auth.getAuthority())
                                 .toList())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION))
+                .expiration(Date.from(Instant.now().plus(securityProperties.getAccessTokenMinutes(), ChronoUnit.MINUTES)))
                 .signWith(key)
                 .compact();
     }
@@ -84,7 +85,7 @@ public class JwtService {
         return Jwts.builder()
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION))
+                .expiration(Date.from(Instant.now().plus(securityProperties.getRefreshTokenDays(), ChronoUnit.DAYS)))
                 .signWith(key)
                 .compact();
     }

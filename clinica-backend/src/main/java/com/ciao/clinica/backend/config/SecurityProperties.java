@@ -17,4 +17,6 @@ public class SecurityProperties {
     private int refreshTokenDays;
     private int absoluteSessionDays;
 
+    private String secretKey;
+
 }

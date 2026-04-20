@@ -21,3 +21,4 @@ security:
   access-token-minutes: 15
   refresh-token-days: 1
   absolute-session-days: 7
+  secret-key: ${JWT_SECRET:ESTA_ES_UNA_CLAVE_SUPER_SEGURA_MINIMO_256_BITS_CAMBIAR_EN_PRODUCCION_123456}
